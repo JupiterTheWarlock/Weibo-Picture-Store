@@ -1,0 +1,86 @@
+---
+alwaysApply: true
+description: Chrome扩展开发规范和约定
+---
+
+# Chrome扩展开发规则
+
+## Manifest V3架构
+项目采用 [Manifest V3](mdc:src/manifest.json) 规范：
+- **Service Worker**: [background.ts](mdc:src/scripts/background.ts) 作为后台服务
+- **Content Scripts**: [inject.ts](mdc:src/scripts/inject.ts) 注入所有页面
+- **Action Popup**: [popup.ts](mdc:src/scripts/popup.ts) 扩展弹窗
+- **Options Page**: [options.ts](mdc:src/scripts/options.ts) 设置页面
+
+## 权限管理
+### 必需权限
+```json
+"permissions": [
+  "clipboardWrite", "downloads", "contextMenus", 
+  "notifications", "storage", "declarativeNetRequestWithHostAccess"
+]
+```
+
+### 主机权限
+- 微博相关域名：`*.weibo.cn`, `*.weibo.com`, `*.sina.com.cn`, `*.sinaimg.cn`
+- 可选权限：`*://*/*` (Firefox需要用户手动开启)
+
+## 消息传递规范
+使用 [ServiceWorkerMessage](mdc:global.d.ts) 接口：
+```typescript
+chrome.runtime.onMessage.addListener((message: ServiceWorkerMessage, sender, sendResponse) => {
+    switch (message.cmd) {
+        case "GetRuleId": // 生成规则ID
+        case "AddLog":    // 添加日志
+        case "WithoutCorsMode": // CORS错误处理
+    }
+});
+```
+
+## 存储机制
+### Chrome Storage API
+- **Sync存储**: 用户设置如 [K_AUTO_DISPLAY_CHANGELOG](mdc:src/scripts/sharre/constant.ts)
+- **Local存储**: 账户信息如 [K_WEIBO_ACCOUNT_DETAILS](mdc:src/scripts/sharre/constant.ts)
+- 使用 [ChromeStorageArea](mdc:src/scripts/sharre/chrome-storage.ts) 封装
+
+### 存储键值约定
+```typescript
+// Sync 存储 (跨设备同步)
+export const K_AUTO_DISPLAY_CHANGELOG = "auto_display_changelog";
+export const K_WEIBO_INHERITED_WATERMARK = "weibo_inherited_watermark";
+
+// Local 存储 (本地设备)
+export const K_WEIBO_ACCOUNT_DETAILS = "weibo_account_details";
+export const K_WEIBO_SCHEME_TYPE = "custom_scheme_type";
+```
+
+## 国际化支持
+- 使用 `__MSG_ext_name__` 格式引用 [messages.json](mdc:src/_locales/zh_CN/messages.json)
+- 所有用户可见文本必须支持国际化
+- 默认语言环境：`zh_CN`
+
+## 上下文菜单
+在 [context-menu.ts](mdc:src/scripts/background/context-menu.ts) 中定义：
+- 图片上传：检测页面图片资源
+- 视频帧上传：HTML5视频当前帧
+- 批量操作：历史记录管理
+
+## 通知系统
+使用 [constant.ts](mdc:src/scripts/sharre/constant.ts) 中的通知ID：
+```typescript
+export const NID_LOGIN_RESULT = "NID_LOGIN_RESULT";
+export const NID_UPLOAD_RESULT = "NID_UPLOAD_RESULT";
+export const NID_COPY_URL_FAIL = "NID_COPY_URL_FAIL";
+```
+
+## 安全考虑
+- **CSP**: 严格的内容安全策略
+- **CORS**: 使用 `declarativeNetRequestWithHostAccess` 处理跨域
+- **用户数据**: 敏感信息(如密码)仅本地存储，不上传服务器
+
+## 兼容性
+- **Chrome**: 最低版本 110
+- **Firefox**: 支持但需要 [manifest.firefox.json](mdc:src/manifest.firefox.json)
+- 使用 `@types/chrome` 和 `@types/firefox-webext-browser` 类型定义
+
+开发Chrome扩展功能时必须遵循这些规范，确保扩展的安全性和兼容性。

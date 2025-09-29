@@ -1,0 +1,58 @@
+---
+alwaysApply: true
+description: TypeScript编码标准和约定
+---
+
+# TypeScript编码标准规则
+
+## 技术栈要求
+- **严格模式**: 项目使用 `"strict": true`，但 `"strictNullChecks": false`
+- **目标版本**: ES2022 (`"target": "ESNext"`)
+- **模块系统**: ESNext模块 (`"module": "ESNext"`)
+- **导入方式**: 使用 ES6 import/export，文件扩展名必须包含 `.js`
+
+## 文件头版权声明
+每个TypeScript文件必须包含版权声明：
+```typescript
+/*
+ * Copyright (c) 2018 The Weibo-Picture-Store Authors. All rights reserved.
+ * Use of this source code is governed by a MIT-style license that can be
+ * found in the LICENSE file.
+ */
+```
+
+## 导入规范
+- 相对导入必须使用 `.js` 扩展名：`import { Utils } from "./utils.js"`
+- 按类型分组导入：Chrome APIs → 项目模块 → 第三方库
+- 使用命名导出而非默认导出
+
+## 类设计模式
+### Dispatcher模式
+- 页面控制器使用 [Dispatcher类](mdc:src/scripts/popup/dispatcher.ts)
+- 包含 `init()` 方法作为入口点
+- 使用私有方法组织内部逻辑
+
+### 单例模式
+- API调用使用 [banker.ts](mdc:src/scripts/weibo/banker.ts) 中的singleton函数
+- 缓存机制避免重复请求
+
+### 工具类模式
+- 静态工具类如 [Utils](mdc:src/scripts/sharre/utils.ts) 和 [PConfig](mdc:src/scripts/sharre/constant.ts)
+- 只包含静态方法，不实例化
+
+## 错误处理
+- 使用常量定义错误消息：`E_INVALID_PARSED_DATA = "E2001: 解析后的数据无效"`
+- Promise拒绝使用自定义Error对象
+- 异步函数必须正确处理rejection
+
+## 类型定义
+- 使用 `global.d.ts` 中的 `WB` 命名空间
+- 接口命名以 `I` 开头（如 `ICheckoutInfo`）
+- 避免使用 `any`，优先使用具体类型
+
+## 代码组织
+- 公共方法标注 `@public`，私有方法标注 `@private`
+- 异步方法标注 `@async`
+- 复杂逻辑拆分为小的私有方法
+
+开发时必须遵循这些TypeScript编码标准，确保代码风格的一致性。

@@ -1,0 +1,42 @@
+---
+alwaysApply: true
+---
+
+# 微博图床项目概览与架构
+
+## 项目简介
+这是一个Chrome/Firefox浏览器扩展项目，用于上传图片到微博并生成外链。项目采用TypeScript开发，支持Manifest V3。
+
+## 核心功能模块
+- **图片上传**: 支持拖拽、粘贴、右键菜单上传图片到微博
+- **格式转换**: 支持JPEG、PNG、GIF，以及SVG、BMP、WebP、ico的有损转换
+- **链接生成**: 生成URL、HTML、UBB、Markdown四种格式
+- **历史记录**: 查看、管理已上传的图片
+- **微博集成**: 自动同步到微相册，支持账号密码登录
+
+## 技术架构
+### 分层架构模式
+- **Background Layer**: Service Worker，处理后台逻辑
+- **Content Script Layer**: 注入页面脚本，处理页面交互
+- **Popup/Options Layer**: 用户界面层
+- **Shared Layer** (`sharre/`): 共享工具类和配置
+
+### 模块化设计
+- **weibo/**: 微博API相关模块 ([album.ts](mdc:src/scripts/weibo/album.ts), [upload.ts](mdc:src/scripts/weibo/upload.ts), [photo.ts](mdc:src/scripts/weibo/photo.ts))
+- **background/**: 后台服务模块 ([events-handler.ts](mdc:src/scripts/background/events-handler.ts), [context-menu.ts](mdc:src/scripts/background/context-menu.ts))
+- **popup/**: 弹窗界面模块 ([dispatcher.ts](mdc:src/scripts/popup/dispatcher.ts))
+- **history/**: 历史记录模块 ([dispatcher.ts](mdc:src/scripts/history/dispatcher.ts))
+
+## 设计模式
+- **Dispatcher模式**: 各页面使用Dispatcher类统一管理状态和事件
+- **单例模式**: API调用使用banker.ts中的单例缓存
+- **观察者模式**: 使用IntersectionObserver进行懒加载
+- **Promise链式处理**: 异步操作的标准化处理
+
+## 关键约定
+- 使用ES6 Modules和TypeScript
+- 严格的错误处理和日志记录
+- Chrome Extension API的现代化使用
+- 响应式UI设计
+
+开发时必须保持与现有架构的一致性，不要引入不兼容的设计模式或破坏现有的模块划分。

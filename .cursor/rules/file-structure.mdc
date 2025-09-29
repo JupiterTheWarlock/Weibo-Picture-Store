@@ -1,0 +1,95 @@
+---
+globs: **/*
+description: 文件结构和命名约定规则
+---
+
+# 文件结构和命名规则
+
+## 目录结构约定
+```
+src/
+├── scripts/           # 核心业务逻辑
+│   ├── background/    # 后台服务模块
+│   ├── popup/         # 弹窗界面模块  
+│   ├── history/       # 历史记录模块
+│   ├── inject/        # 内容脚本模块
+│   ├── sharre/        # 共享工具模块
+│   └── weibo/         # 微博API模块
+├── sheets/            # 样式文件
+│   └── sharre/        # 共享样式
+├── _locales/          # 国际化文件
+├── assets/            # 静态资源
+└── icons/             # 扩展图标
+```
+
+## 模块划分原则
+### 核心模块
+- **background/**: Service Worker相关，如 [events-handler.ts](mdc:src/scripts/background/events-handler.ts)
+- **popup/**: 弹窗UI逻辑，如 [dispatcher.ts](mdc:src/scripts/popup/dispatcher.ts)
+- **history/**: 历史记录管理，如 [dispatcher.ts](mdc:src/scripts/history/dispatcher.ts)
+- **weibo/**: 微博API封装，如 [upload.ts](mdc:src/scripts/weibo/upload.ts)
+
+### 共享模块 (sharre/)
+- **工具函数**: [utils.ts](mdc:src/scripts/sharre/utils.ts)
+- **常量定义**: [constant.ts](mdc:src/scripts/sharre/constant.ts)  
+- **存储管理**: [chrome-storage.ts](mdc:src/scripts/sharre/chrome-storage.ts)
+- **类型判断**: [bitmap-mime.ts](mdc:src/scripts/sharre/bitmap-mime.ts)
+
+## 文件命名约定
+### TypeScript文件
+- **小写短横线**: `context-menu.ts`, `events-handler.ts`
+- **功能描述性**: `fetch-directory.ts`, `file-progress.ts`
+- **避免缩写**: 使用完整单词而非缩写
+
+### 页面入口文件
+- 与HTML同名：`popup.ts` → `popup.html`
+- 简单直接：`history.ts`, `options.ts`, `background.ts`
+
+### 样式文件
+- 与对应功能匹配：`popup.css`, `history.css`
+- 共享样式放在 `sheets/sharre/`：`base.css`, `loading.css`
+
+## 导入路径规则
+### 相对导入
+```typescript
+// 正确：使用.js扩展名
+import { Utils } from "./utils.js";
+import { PConfig } from "../sharre/constant.js";
+
+// 错误：省略扩展名
+import { Utils } from "./utils";
+```
+
+### 层级关系
+- 同级模块：`./filename.js`
+- 父级模块：`../module/filename.js`
+- 跨模块引用：明确路径层级
+
+## 资源文件组织
+### 静态资源 (assets/)
+- **图标资源**: `loading.svg`, `placeholder.png`
+- **字体文件**: `webfonts/fontawesome.woff2`
+- **捐赠图片**: `donate/alipay.jpg`, `donate/wechat-pay.jpg`
+
+### 国际化 (_locales/)
+- 按语言代码组织：`zh_CN/messages.json`
+- 键名使用下划线：`ext_name`, `warn_title`
+
+## 编译输出规则
+- **源码**: `src/**/*.ts`
+- **编译输出**: JavaScript文件与TypeScript源文件同级
+- **排除规则**: `!src/**/*.ts`, `!src/**/*.js.map` (打包时)
+
+## 模块职责边界
+### 严格分层
+- **UI层**: popup/, history/ - 只处理界面逻辑
+- **业务层**: weibo/ - 只处理微博API
+- **工具层**: sharre/ - 提供通用功能
+- **系统层**: background/ - 处理扩展系统事件
+
+### 依赖方向
+- UI层 → 业务层 → 工具层
+- 避免循环依赖
+- 高层模块不依赖低层实现细节
+
+开发时必须遵循这些文件结构和命名约定，确保项目的可维护性和可扩展性。

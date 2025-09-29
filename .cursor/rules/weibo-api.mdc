@@ -1,0 +1,176 @@
+---
+globs: src/scripts/weibo/**/*
+description: 微博API集成和业务逻辑规则
+---
+
+# 微博API集成规则
+
+## API模块架构
+### 核心API模块
+- **[upload.ts](mdc:src/scripts/weibo/upload.ts)**: 图片上传主流程
+- **[album.ts](mdc:src/scripts/weibo/album.ts)**: 微相册管理
+- **[photo.ts](mdc:src/scripts/weibo/photo.ts)**: 图片操作和同步
+- **[author.ts](mdc:src/scripts/weibo/author.ts)**: 用户认证和登录
+- **[channel.ts](mdc:src/scripts/weibo/channel.ts)**: 网络请求通道
+- **[banker.ts](mdc:src/scripts/weibo/banker.ts)**: API缓存和单例管理
+
+### 辅助模块
+- **[activator.ts](mdc:src/scripts/weibo/activator.ts)**: 离屏窗口管理
+- **[watermark.ts](mdc:src/scripts/weibo/watermark.ts)**: 水印处理
+
+## 业务流程规范
+### 图片上传流程
+```typescript
+// 标准上传流程
+async function uploadImage(blob: Blob): Promise<WB.PackedItem> {
+    1. reader() - 读取和预处理图片
+    2. purifier() - 验证文件类型和大小
+    3. requester() - 发送上传请求
+    4. attachPhotoToSpecialAlbum() - 同步到微相册
+}
+```
+
+### 错误处理约定
+```typescript
+// 使用常量定义的错误类型
+export const E_FILE_SIZE_RESTRICT = "E5001: 文件大小超出约束范围";
+export const E_FILE_TYPE_RESTRICT = "E5003: 文件类型超出约束范围";
+export const E_MISS_WEIBO_ACCOUNT = "E5004: 缺少微博账户信息";
+```
+
+## API调用模式
+### 单例模式缓存
+```typescript
+// 使用banker.ts中的singleton函数
+import { singleton } from "./banker.js";
+
+export function getAlbumInfo(): Promise<WB.AlbumInfo> {
+    return singleton(async () => {
+        // API调用逻辑
+    });
+}
+```
+
+### 网络请求规范
+```typescript
+// 使用channel.ts统一处理请求
+const response = await channel.fetch(url, {
+    method: "POST",
+    body: formData,
+    headers: {
+        "User-Agent": PSEUDO_MOBILE_UA,
+        "Referer": "https://weibo.com"
+    }
+});
+```
+
+## 微博API约定
+### 支持的图片格式
+```typescript
+// 来自constant.ts
+static get weiboSupportedTypes() {
+    return {
+        "image/jpeg": { type: ".jpg", typo: ".jpg" },
+        "image/png": { type: ".png", typo: ".jpg" },
+        "image/gif": { type: ".gif", typo: ".gif" },
+        "image/apng": { type: ".png", typo: ".jpg" }
+    };
+}
+```
+
+### 文件大小限制
+```typescript
+// 最大文件大小：20MB - 1字节
+export const MAXIMUM_WEIBO_PICTURE_SIZE = 20 * 1024 * 1024 - 1;
+```
+
+### URL生成规则
+```typescript
+// 随机域名前缀
+static get randomImageHost() {
+    const urlPrefix = ["tvax1", "tvax2", "tvax3", "tvax4"];
+    return urlPrefix[Math.floor(Math.random() * urlPrefix.length)] + ".sinaimg.cn";
+}
+```
+
+## 用户认证机制
+### 账户信息存储
+```typescript
+// 存储键定义
+export const K_WEIBO_ACCOUNT_DETAILS = "weibo_account_details";
+
+// 账户信息结构
+interface WeiboAccountDetails {
+    username: string;
+    password: string;
+    allowUserAccount: boolean;
+}
+```
+
+### 登录状态检查
+- 优先使用浏览器现有Cookie
+- 可选使用账户密码自动登录
+- 支持离屏窗口静默登录
+
+## 相册管理规范
+### 相册创建规则
+- 默认相册名：`来自微博图床扩展`
+- 相册满1000张时自动创建新相册
+- 最多支持100个相册
+
+### 图片同步机制
+```typescript
+// 上传后自动同步到微相册
+await attachPhotoToSpecialAlbum({
+    pid: uploadResult.pid,
+    albumId: albumInfo.albumId
+});
+```
+
+## 数据类型规范
+### 全局类型定义
+```typescript
+// 使用WB命名空间
+declare namespace WB {
+    interface PackedItem {
+        blob: Blob;
+        result: ArrayBuffer;
+        mimeType: string;
+    }
+    
+    interface AlbumInfo {
+        albumId: string;
+        count: number;
+        total: number;
+    }
+}
+```
+
+### Promise处理约定
+- 所有异步API必须返回Promise
+- 使用`@reject {Error}`注释说明拒绝类型
+- 统一错误处理和日志记录
+
+## 性能优化策略
+### 缓存机制
+- API响应缓存（24小时有效期）
+- 用户信息缓存避免重复请求
+- 相册信息本地存储
+
+### 请求优化
+- 图片预处理减少上传大小
+- 批量操作合并请求
+- 失败重试机制
+
+## 安全考虑
+### 数据保护
+- 敏感信息仅本地存储
+- 网络请求使用HTTPS
+- 避免敏感数据日志输出
+
+### CORS处理
+- 使用`declarativeNetRequestWithHostAccess`权限
+- 支持跨域资源访问
+- 错误时提供用户友好提示
+
+开发微博API相关功能时必须遵循这些规范，确保API调用的一致性和可靠性。
