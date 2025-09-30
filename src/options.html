@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <!--
   ~ Copyright (c) 2018 The Weibo-Picture-Store Authors. All rights reserved.
   ~ Use of this source code is governed by a MIT-style license that can be
@@ -48,6 +48,72 @@
                     <i class="fa fa-info-circle"></i>
                 </a>
             </div>
+            <h2>全局URL模板</h2>
+            <div>
+                <label title="启用全局URL模板后，所有上传的图片都将使用此模板生成链接">
+                    <input type="checkbox" value="url_template_enabled" />
+                    <span>启用全局URL模板</span>
+                </label>
+                <fieldset id="url-template-fieldset" disabled>
+                    <div class="url-template-section">
+                        <p style="color: #666; margin: 10px 0">
+                            输入完整的URL模板来自定义所有图片外链格式。支持以下占位符：
+                        </p>
+                        <div
+                            style="
+                                background: #f5f5f5;
+                                padding: 12px;
+                                border-radius: 4px;
+                                margin: 10px 0;
+                                font-family: monospace;
+                                font-size: 12px;
+                            "
+                        >
+                            <div><strong>基础占位符：</strong></div>
+                            <div>• {{pid}} - 图片ID（如 006G4xsfgy1h8pbgtnqirj30u01hlqv5）</div>
+                            <div>• {{extname}} - 文件扩展名（如 .jpg）</div>
+                            <div>• {{basename}} - 完整文件名（如 006G4xsfgy1h8pbgtnqirj30u01hlqv5.jpg）</div>
+                            <div style="margin-top: 8px"><strong>高级占位符：</strong></div>
+                            <div>• {{scheme}} - 协议（如 https://）</div>
+                            <div>• {{host}} - 域名（如 tvax1.sinaimg.cn）</div>
+                            <div>• {{crop}} - 裁剪尺寸（固定为 large）</div>
+                            <div>• {{path}} - 路径（如 large/006G4xsfgy1h8pbgtnqirj30u01hlqv5.jpg）</div>
+                        </div>
+                        <div style="background: #e6f7ff; padding: 12px; border-radius: 4px; margin: 10px 0">
+                            <div><strong>📌 模板示例：</strong></div>
+                            <div style="margin-top: 8px; font-family: monospace; font-size: 12px">
+                                <div>• 微博原生：{{scheme}}{{host}}/{{crop}}/{{basename}}</div>
+                                <div>• CDN代理：https://cdn.example.com/weibo/{{crop}}/{{basename}}</div>
+                                <div>• 自定义API：https://proxy.example.com/api/image?file={{basename}}</div>
+                            </div>
+                        </div>
+                        <div>
+                            <label title="输入完整的URL模板">
+                                <input
+                                    spellcheck="false"
+                                    type="text"
+                                    placeholder="例如：https://cdn.example.com/weibo/{{crop}}/{{basename}}"
+                                    id="url-template-input"
+                                    style="width: 100%; padding: 8px; font-family: monospace"
+                                />
+                            </label>
+                        </div>
+                        <div style="margin-top: 10px">
+                            <label>
+                                <input type="button" value="保存模板" id="save-url-template" />
+                            </label>
+                        </div>
+                        <a
+                            title="查看完整文档"
+                            target="_blank"
+                            href="https://github.com/Semibold/Weibo-Picture-Store/blob/master/docs/url-template-system.md"
+                            style="display: inline-block; margin-top: 8px; color: #1890ff"
+                        >
+                            <i class="fa fa-book"></i> 查看完整文档
+                        </a>
+                    </div>
+                </fieldset>
+            </div>
             <h2>微博账户</h2>
             <div>
                 <label title="账号/密码不会同步到任何服务器上">
@@ -67,7 +133,7 @@
                     </div>
                     <div>
                         <label>
-                            <input spellcheck="false" type="button" value="确认" id="confirm"/>
+                            <input spellcheck="false" type="button" value="确认" id="confirm" />
                         </label>
                     </div>
                 </fieldset>

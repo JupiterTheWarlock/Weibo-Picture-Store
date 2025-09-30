@@ -60,6 +60,8 @@ export const K_WEIBO_CLIP_TYPE = "custom_clip_type";
 export const K_WEIBO_CLIP_VALUE = "custom_clip_value";
 export const K_RULE_ID_POINTER = "rule_id_pointer";
 export const K_POPUP_WINDOW_INFO = "popup_window_info";
+export const K_URL_TEMPLATE_ENABLED = "url_template_enabled"; // 是否启用URL模板系统
+export const K_URL_TEMPLATE_VALUE = "url_template_value"; // 用户自定义的完整URL模板
 
 /**
  * @desc Error messages

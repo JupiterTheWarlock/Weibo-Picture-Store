@@ -4,7 +4,13 @@
  * found in the LICENSE file.
  */
 
-import { K_AUTO_DISPLAY_CHANGELOG, K_WEIBO_ACCOUNT_DETAILS, K_WEIBO_INHERITED_WATERMARK } from "./sharre/constant.js";
+import {
+    K_AUTO_DISPLAY_CHANGELOG,
+    K_WEIBO_ACCOUNT_DETAILS,
+    K_WEIBO_INHERITED_WATERMARK,
+    K_URL_TEMPLATE_ENABLED,
+    K_URL_TEMPLATE_VALUE,
+} from "./sharre/constant.js";
 import { Utils } from "./sharre/utils.js";
 import { WeiboStatic } from "./sharre/weibo-action.js";
 import { chromeStorageLocal, chromeStorageSync } from "./sharre/chrome-storage.js";
@@ -13,6 +19,11 @@ const displayChangelog = document.querySelector<HTMLInputElement>(`input[value="
 const inheritedWatermark = document.querySelector<HTMLInputElement>(`input[value="weibo_inherited_watermark"]`);
 const allowUserAccount = document.querySelector<HTMLInputElement>(`input[value="allow_user_account"]`);
 const httpRefererForge = document.querySelector<HTMLInputElement>(`input[value="http_referer_forge"]`);
+const urlTemplateEnabled = document.querySelector<HTMLInputElement>(`input[value="url_template_enabled"]`);
+
+const urlTemplateFieldset = document.querySelector<HTMLFieldSetElement>("#url-template-fieldset");
+const urlTemplateInput = document.querySelector<HTMLInputElement>("#url-template-input");
+const saveUrlTemplate = document.querySelector<HTMLInputElement>("#save-url-template");
 
 const fieldset = document.querySelector("fieldset");
 const confirm = document.querySelector<HTMLInputElement>("#confirm");
@@ -33,6 +44,12 @@ function registerInputClickEventWithSyncStorage(input: HTMLInputElement, key: st
 chromeStorageSync.promise.then((data) => {
     displayChangelog.checked = Boolean(data[K_AUTO_DISPLAY_CHANGELOG]);
     inheritedWatermark.checked = Boolean(data[K_WEIBO_INHERITED_WATERMARK]);
+    urlTemplateEnabled.checked = Boolean(data[K_URL_TEMPLATE_ENABLED]);
+    urlTemplateInput.value = data[K_URL_TEMPLATE_VALUE] || "";
+
+    if (urlTemplateEnabled.checked) {
+        urlTemplateFieldset.disabled = false;
+    }
 });
 
 registerInputClickEventWithSyncStorage(displayChangelog, K_AUTO_DISPLAY_CHANGELOG);
@@ -122,6 +139,38 @@ httpRefererForge.addEventListener("click", () => {
             }
             target.checked = granted;
             target.disabled = granted;
+        },
+    );
+});
+
+urlTemplateEnabled.addEventListener("click", () => {
+    const checked = urlTemplateEnabled.checked;
+    chrome.storage.sync.set(
+        {
+            [K_URL_TEMPLATE_ENABLED]: checked,
+        },
+        () => {
+            if (chrome.runtime.lastError) {
+                urlTemplateEnabled.checked = !checked;
+                return;
+            }
+            urlTemplateFieldset.disabled = !checked;
+        },
+    );
+});
+
+saveUrlTemplate.addEventListener("click", () => {
+    const templateValue = urlTemplateInput.value.trim();
+    chrome.storage.sync.set(
+        {
+            [K_URL_TEMPLATE_VALUE]: templateValue,
+        },
+        () => {
+            if (chrome.runtime.lastError) {
+                Utils.notify({ message: chrome.runtime.lastError?.message || "保存失败" });
+                return;
+            }
+            Utils.notify({ message: "URL模板已保存" });
         },
     );
 });

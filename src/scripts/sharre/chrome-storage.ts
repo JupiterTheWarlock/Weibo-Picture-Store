@@ -14,6 +14,8 @@ import {
     K_WEIBO_CLIP_VALUE,
     K_WEIBO_INHERITED_WATERMARK,
     K_WEIBO_SCHEME_TYPE,
+    K_URL_TEMPLATE_ENABLED,
+    K_URL_TEMPLATE_VALUE,
     PConfig,
 } from "./constant.js";
 
@@ -34,6 +36,8 @@ interface IChromeStorageLocalInfo {
 interface IChromeStorageSyncInfo {
     [K_AUTO_DISPLAY_CHANGELOG]?: boolean;
     [K_WEIBO_INHERITED_WATERMARK]?: boolean;
+    [K_URL_TEMPLATE_ENABLED]?: boolean;
+    [K_URL_TEMPLATE_VALUE]?: string;
 }
 
 const SADCache = new Map<chrome.storage.AreaName, unknown>();
@@ -109,4 +113,6 @@ export const chromeStorageLocal = new ChromeStorageArea<IChromeStorageLocalInfo>
 export const chromeStorageSync = new ChromeStorageArea<IChromeStorageSyncInfo>("sync", {
     [K_AUTO_DISPLAY_CHANGELOG]: PConfig.defaultOptions.autoDisplayChangelog,
     [K_WEIBO_INHERITED_WATERMARK]: PConfig.defaultOptions.inheritWeiboWatermark,
+    [K_URL_TEMPLATE_ENABLED]: false,
+    [K_URL_TEMPLATE_VALUE]: "",
 });

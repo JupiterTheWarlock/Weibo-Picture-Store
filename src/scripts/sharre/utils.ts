@@ -449,21 +449,50 @@ export class Utils {
      *      - {{pid}}       - "006G4xsfgy1h8pbgtnqirj30u01hlqv5"
      *      - {{extname}}   - ".jpg"
      *      - {{basename}}  - "006G4xsfgy1h8pbgtnqirj30u01hlqv5.jpg"
+     *      - {{scheme}}    - "https://"
+     *      - {{host}}      - "tvax1.sinaimg.cn"
+     *      - {{crop}}      - "large"
+     *      - {{path}}      - "large/006G4xsfgy1h8pbgtnqirj30u01hlqv5.jpg"
      */
     static genExternalUrl(scheme: string, clip: string, pid: string, suffix: string) {
-        const validPlaceholder = ["{{pid}}", "{{extname}}", "{{basename}}"];
+        const allPlaceholders = [
+            "{{pid}}",
+            "{{extname}}",
+            "{{basename}}",
+            "{{scheme}}",
+            "{{host}}",
+            "{{crop}}",
+            "{{path}}",
+        ];
         const sterilizedClip = clip.trim();
-        const hasPlaceholder = validPlaceholder.some((placeholder) => sterilizedClip.includes(placeholder));
+        const hasPlaceholder = allPlaceholders.some((placeholder) => sterilizedClip.includes(placeholder));
 
         if (hasPlaceholder) {
-            const protocolStartIndex = sterilizedClip.search("//");
-            const urlWithoutProtocol =
-                protocolStartIndex < 0 ? sterilizedClip : sterilizedClip.slice(protocolStartIndex + 2);
-            const replacedPlaceholderUrl = urlWithoutProtocol
-                .replace("{{pid}}", pid)
-                .replace("{{extname}}", suffix)
-                .replace("{{basename}}", pid + suffix);
-            return scheme + replacedPlaceholderUrl;
+            const template = sterilizedClip;
+            const host = PConfig.randomImageHost;
+            const basename = pid + suffix;
+
+            // 判断是否为完整URL模板（包含scheme或host占位符）
+            const isFullTemplate = template.includes("{{scheme}}") || template.includes("{{host}}");
+
+            // 移除协议前缀（如果存在）
+            const protocolStartIndex = template.search("//");
+            const templateContent = protocolStartIndex < 0 ? template : template.slice(protocolStartIndex + 2);
+
+            // {{crop}} 默认使用 "large"，{{path}} 默认使用 "large/basename"
+            const cropValue = "large";
+            const pathValue = `${cropValue}/${basename}`;
+
+            const replacedUrl = templateContent
+                .replace(/\{\{pid\}\}/g, pid)
+                .replace(/\{\{extname\}\}/g, suffix)
+                .replace(/\{\{basename\}\}/g, basename)
+                .replace(/\{\{scheme\}\}/g, scheme)
+                .replace(/\{\{host\}\}/g, host)
+                .replace(/\{\{crop\}\}/g, cropValue)
+                .replace(/\{\{path\}\}/g, pathValue);
+
+            return isFullTemplate ? replacedUrl : scheme + replacedUrl;
         }
         return `${scheme + PConfig.randomImageHost}/${sterilizedClip}/${pid + suffix}`;
     }

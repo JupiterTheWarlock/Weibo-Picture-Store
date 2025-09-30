@@ -5,12 +5,19 @@
  */
 
 import { Utils } from "../sharre/utils.js";
-import { K_WEIBO_CLIP_TYPE, K_WEIBO_CLIP_VALUE, K_WEIBO_SCHEME_TYPE, PConfig } from "../sharre/constant.js";
+import {
+    K_WEIBO_CLIP_TYPE,
+    K_WEIBO_CLIP_VALUE,
+    K_WEIBO_SCHEME_TYPE,
+    K_URL_TEMPLATE_ENABLED,
+    K_URL_TEMPLATE_VALUE,
+    PConfig,
+} from "../sharre/constant.js";
 import { SectionTable } from "./section-table.js";
 import { WeiboClipKey, WeiboConfig, WeiboConfigType } from "../sharre/weibo-config.js";
 import { WeiboUpload } from "../sharre/weibo-action.js";
 import { fetchBlob } from "../sharre/fetch-blob.js";
-import { chromeStorageLocal } from "../sharre/chrome-storage.js";
+import { chromeStorageLocal, chromeStorageSync } from "../sharre/chrome-storage.js";
 
 interface IHybridSectionData {
     sectionTable: SectionTable;
@@ -34,6 +41,8 @@ export class Dispatcher {
     classifyMap: Map<Blob, string>;
     preStoreMap: Map<string, IPreStore[]>;
     weiboUpload: WeiboUpload;
+    urlTemplateEnabled: boolean;
+    urlTemplateValue: string;
 
     constructor() {
         this.config = null;
@@ -48,6 +57,8 @@ export class Dispatcher {
         this.classifyMap = new Map();
         this.preStoreMap = new Map();
         this.weiboUpload = new WeiboUpload(true);
+        this.urlTemplateEnabled = false;
+        this.urlTemplateValue = "";
     }
 
     /** @public */
@@ -90,7 +101,10 @@ export class Dispatcher {
     /** @private */
     async startFromBlank() {
         const data = await chromeStorageLocal.promise;
+        const syncData = await chromeStorageSync.promise;
         this.linker.value = data[K_WEIBO_CLIP_VALUE] || "";
+        this.urlTemplateEnabled = Boolean(syncData[K_URL_TEMPLATE_ENABLED]);
+        this.urlTemplateValue = syncData[K_URL_TEMPLATE_VALUE] || "";
         for (const [name, value] of Object.entries(this.config)) {
             document.querySelector<HTMLInputElement>(`[name="${name}"][value="${value}"]`).checked = true;
         }
@@ -314,8 +328,14 @@ export class Dispatcher {
             return item as WB.AssignedPackedItem;
         }
         const scheme = WeiboConfig.schemeMapping[this.config.scheme];
-        const clip = WeiboConfig.clipMapping[this.config.clip];
         const suffix = PConfig.weiboSupportedTypes[item.mimeType].typo;
+
+        // 优先使用全局URL模板
+        const clip =
+            this.urlTemplateEnabled && this.urlTemplateValue
+                ? this.urlTemplateValue
+                : WeiboConfig.clipMapping[this.config.clip];
+
         const url = Utils.genExternalUrl(scheme, clip, item.pid, suffix);
         const file = item.blob as File;
         const filename = Utils.getFilenameWithoutSuffix(file && file.name);
