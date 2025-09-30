@@ -330,13 +330,13 @@ export class Dispatcher {
         const scheme = WeiboConfig.schemeMapping[this.config.scheme];
         const suffix = PConfig.weiboSupportedTypes[item.mimeType].typo;
 
-        // 优先使用全局URL模板
-        const clip =
-            this.urlTemplateEnabled && this.urlTemplateValue
-                ? this.urlTemplateValue
-                : WeiboConfig.clipMapping[this.config.clip];
+        // 获取实际的裁剪值（用于模板中的{{crop}}占位符）
+        const actualCrop = WeiboConfig.clipMapping[this.config.clip];
 
-        const url = Utils.genExternalUrl(scheme, clip, item.pid, suffix);
+        // 优先使用全局URL模板
+        const clip = this.urlTemplateEnabled && this.urlTemplateValue ? this.urlTemplateValue : actualCrop;
+
+        const url = Utils.genExternalUrl(scheme, clip, item.pid, suffix, actualCrop);
         const file = item.blob as File;
         const filename = Utils.getFilenameWithoutSuffix(file && file.name);
         const assignedPackedItem = Object.assign(item, {

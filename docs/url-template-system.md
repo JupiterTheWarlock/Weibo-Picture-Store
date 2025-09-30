@@ -107,7 +107,7 @@ interface UrlTemplateVariables {
     // 新增变量
     "{{scheme}}": string; // "https://"
     "{{host}}": string; // "tvax1.sinaimg.cn"
-    "{{crop}}": string; // "large"
+    "{{crop}}": string; // "large" | "mw690" | "thumbnail" | custom
     "{{path}}": string; // "large/006G4xsfgy1h8pbgtnqirj30u01hlqv5.jpg"
 }
 ```

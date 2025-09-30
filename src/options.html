@@ -76,15 +76,27 @@
                             <div style="margin-top: 8px"><strong>高级占位符：</strong></div>
                             <div>• {{scheme}} - 协议（如 https://）</div>
                             <div>• {{host}} - 域名（如 tvax1.sinaimg.cn）</div>
-                            <div>• {{crop}} - 裁剪尺寸（固定为 large）</div>
+                            <div>• {{crop}} - 裁剪尺寸（根据弹窗页面选择动态改变：large/mw690/thumbnail/自定义）</div>
                             <div>• {{path}} - 路径（如 large/006G4xsfgy1h8pbgtnqirj30u01hlqv5.jpg）</div>
                         </div>
                         <div style="background: #e6f7ff; padding: 12px; border-radius: 4px; margin: 10px 0">
                             <div><strong>📌 模板示例：</strong></div>
                             <div style="margin-top: 8px; font-family: monospace; font-size: 12px">
                                 <div>• 微博原生：{{scheme}}{{host}}/{{crop}}/{{basename}}</div>
-                                <div>• CDN代理：https://cdn.example.com/weibo/{{crop}}/{{basename}}</div>
-                                <div>• 自定义API：https://proxy.example.com/api/image?file={{basename}}</div>
+                                <div style="margin-top: 6px; color: #666"><strong>可用缓存服务：</strong></div>
+                                <div>• IPFS：https://cdn.ipfsscan.io/weibo/{{crop}}/{{basename}}</div>
+                                <div>• WordPress：https://i0.wp.com/{{host}}/{{crop}}/{{basename}}</div>
+                                <div>
+                                    • Weserv：https://images.weserv.nl/?url={{scheme}}{{host}}/{{crop}}/{{basename}}
+                                </div>
+                                <div>
+                                    •
+                                    百度1：https://image.baidu.com/search/down?url={{scheme}}{{host}}/{{crop}}/{{basename}}
+                                </div>
+                                <div>
+                                    •
+                                    百度2：https://gimg2.baidu.com/image_search/&app=2020&src={{host}}/{{crop}}/{{basename}}
+                                </div>
                             </div>
                         </div>
                         <div>

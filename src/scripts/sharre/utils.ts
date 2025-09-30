@@ -451,10 +451,10 @@ export class Utils {
      *      - {{basename}}  - "006G4xsfgy1h8pbgtnqirj30u01hlqv5.jpg"
      *      - {{scheme}}    - "https://"
      *      - {{host}}      - "tvax1.sinaimg.cn"
-     *      - {{crop}}      - "large"
+     *      - {{crop}}      - "large" | "mw690" | "thumbnail" | custom
      *      - {{path}}      - "large/006G4xsfgy1h8pbgtnqirj30u01hlqv5.jpg"
      */
-    static genExternalUrl(scheme: string, clip: string, pid: string, suffix: string) {
+    static genExternalUrl(scheme: string, clip: string, pid: string, suffix: string, actualCrop?: string) {
         const allPlaceholders = [
             "{{pid}}",
             "{{extname}}",
@@ -479,8 +479,8 @@ export class Utils {
             const protocolStartIndex = template.search("//");
             const templateContent = protocolStartIndex < 0 ? template : template.slice(protocolStartIndex + 2);
 
-            // {{crop}} 默认使用 "large"，{{path}} 默认使用 "large/basename"
-            const cropValue = "large";
+            // 使用实际的crop值（从用户选择的裁剪选项获取）
+            const cropValue = actualCrop || "large";
             const pathValue = `${cropValue}/${basename}`;
 
             const replacedUrl = templateContent
