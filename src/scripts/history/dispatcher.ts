@@ -5,8 +5,9 @@
  */
 
 import { Utils } from "../sharre/utils.js";
-import { PConfig } from "../sharre/constant.js";
+import { PConfig, K_URL_TEMPLATE_ENABLED, K_URL_TEMPLATE_VALUE } from "../sharre/constant.js";
 import { WeiboStatic } from "../sharre/weibo-action.js";
+import { chromeStorageSync } from "../sharre/chrome-storage.js";
 
 interface ICheckoutInfo {
     page: number;
@@ -39,6 +40,8 @@ export class Dispatcher {
     sections: Map<HTMLElement, WB.AlbumPhoto>;
     selected: Set<HTMLElement>;
     observer: IntersectionObserver;
+    urlTemplateEnabled: boolean;
+    urlTemplateValue: string;
 
     constructor() {
         this.checkout = {
@@ -74,6 +77,8 @@ export class Dispatcher {
             },
             { rootMargin: "0%", threshold: 0 },
         );
+        this.urlTemplateEnabled = false;
+        this.urlTemplateValue = "";
     }
 
     /**
@@ -83,6 +88,7 @@ export class Dispatcher {
         this.parsePlatformOs();
         this.createStructure();
         this.parseQueryString();
+        this.loadUrlTemplateConfig();
         this.registerObserver();
         this.registerListener();
         return this;
@@ -112,6 +118,24 @@ export class Dispatcher {
         const albumId = this.searchParams.get("album_id");
         if (albumId && /^[0-9]+$/.test(albumId)) {
             this.checkout.albumId = albumId;
+        }
+    }
+
+    /**
+     * @private
+     * @async
+     */
+    async loadUrlTemplateConfig() {
+        try {
+            const data = await chromeStorageSync.promise;
+            this.urlTemplateEnabled = Boolean(data[K_URL_TEMPLATE_ENABLED]);
+            this.urlTemplateValue = data[K_URL_TEMPLATE_VALUE] || "";
+        } catch (error) {
+            Utils.log.w({
+                module: "History:Dispatcher",
+                remark: "加载URL模板配置失败",
+                error,
+            });
         }
     }
 
@@ -260,7 +284,8 @@ export class Dispatcher {
                         /^\/\/\w+(?=\.)/i,
                     ]);
                     imgSource.src = `${urlOrigin}/bmiddle/${item.picName}`;
-                    imgLinker.href = `${urlOrigin}/large/${item.picName}`;
+                    imgLinker.href = this.generateImageUrl(item);
+
                     imgUpdate.textContent = item.updated;
                     this.fragment.append(section);
                     this.sections.set(section, item);
@@ -318,10 +343,63 @@ export class Dispatcher {
                             this.selected.add(section);
                             this.detachSelectedPhoto();
                         }
+                    } else {
+                        const cb = target.closest("a.image-copy");
+                        if (cb) {
+                            const section = target.closest("section");
+                            if (section) {
+                                this.copyImageUrl(section);
+                            }
+                        }
                     }
                 }
             }
         });
+    }
+
+    /**
+     * @private
+     */
+    generateImageUrl(albumPhoto: WB.AlbumPhoto): string {
+        const urlOrigin = Utils.replaceUrlScheme(albumPhoto.picHost, "https://" + PConfig.randomImagePrefix, [
+            /^http:\/\/\w+(?=\.)/i,
+            /^https:\/\/\w+(?=\.)/i,
+            /^\/\/\w+(?=\.)/i,
+        ]);
+
+        if (this.urlTemplateEnabled && this.urlTemplateValue) {
+            // picName 已经包含后缀，提取 pid 和 suffix
+            const lastDotIndex = albumPhoto.picName.lastIndexOf(".");
+            const pid = lastDotIndex > 0 ? albumPhoto.picName.substring(0, lastDotIndex) : albumPhoto.picName;
+            const suffix = lastDotIndex > 0 ? albumPhoto.picName.substring(lastDotIndex) : ".jpg";
+            return Utils.genExternalUrl("https://", this.urlTemplateValue, pid, suffix, "large");
+        }
+        return `${urlOrigin}/large/${albumPhoto.picName}`;
+    }
+
+    /**
+     * @private
+     * @async
+     */
+    async copyImageUrl(section: HTMLElement) {
+        const albumPhoto = this.sections.get(section);
+        if (!albumPhoto) {
+            Utils.notify(this.nid, { message: "获取图片信息失败" });
+            return;
+        }
+
+        try {
+            const finalUrl = this.generateImageUrl(albumPhoto);
+            await navigator.clipboard.writeText(finalUrl);
+            Utils.notify(this.nid, { message: "图片链接已复制到剪贴板" });
+        } catch (error) {
+            Utils.log.w({
+                module: "History:Dispatcher",
+                remark: "复制图片链接失败",
+                error,
+            });
+            Utils.notify(this.nid, { message: "复制链接失败，请重试" });
+        }
     }
 
     /**
@@ -393,7 +471,10 @@ export class Dispatcher {
                         <img src="${chrome.i18n.getMessage("image_placeholder")}" alt="preview">
                     </a>
                 </div>
-                <div class="image-label"><span class="image-update" title="最近的修改时间"></span></div>
+                <div class="image-label">
+                    <span class="image-update" title="最近的修改时间"></span>
+                    <a class="image-copy" title="复制图片链接"><i class="fa fa-copy"></i></a>
+                </div>
             </section>`;
         return Utils.parseHTML(html);
     }
