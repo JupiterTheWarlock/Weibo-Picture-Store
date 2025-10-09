@@ -39,7 +39,24 @@ const headHTML = `
             </label>
             <label title="自定义裁剪尺寸">
                 <input type="radio" name="clip" value="4">
-                <input list="custom-clip-list" type="text" placeholder="输入自定义尺寸或链接" spellcheck="false" autocomplete="on" class="custom-clip">
+                <input type="text" placeholder="自定义尺寸" spellcheck="false" autocomplete="off" class="custom-clip" id="custom-clip-input">
+                <button type="button" class="custom-clip-dropdown" title="选择预设尺寸">
+                    <i class="fa fa-caret-down"></i>
+                </button>
+                <div class="custom-clip-options" style="display: none;">
+                    <div class="custom-clip-option" data-value="wap800">wap800 - 800 像素宽度原比例缩放</div>
+                    <div class="custom-clip-option" data-value="wap720">wap720 - 720 像素宽度原比例缩放</div>
+                    <div class="custom-clip-option" data-value="wap360">wap360 - 360 像素宽度原比例缩放</div>
+                    <div class="custom-clip-option" data-value="wap240">wap240 - 240 像素宽度原比例缩放</div>
+                    <div class="custom-clip-option" data-value="wap180">wap180 - 180 像素宽度原比例缩放</div>
+                    <div class="custom-clip-option" data-value="wap50">wap50 - 50 像素宽度原比例缩放</div>
+                    <div class="custom-clip-option" data-value="bmiddle">bmiddle - 440 像素宽度原比例缩放</div>
+                    <div class="custom-clip-option" data-value="small">small - 200 像素宽度原比例缩放</div>
+                    <div class="custom-clip-option" data-value="thumb300">thumb300 - 300 像素正方形裁剪</div>
+                    <div class="custom-clip-option" data-value="thumb180">thumb180 - 180 像素正方形裁剪</div>
+                    <div class="custom-clip-option" data-value="thumb150">thumb150 - 150 像素正方形裁剪</div>
+                    <div class="custom-clip-option" data-value="square">square - 80 像素正方形裁剪</div>
+                </div>
                 <a
                   title="如何设置自定义尺寸或链接"
                   target="_blank"
@@ -48,20 +65,6 @@ const headHTML = `
                   <i class="fa fa-info-circle"></i>
                 </a>
             </label>
-            <datalist id="custom-clip-list">
-                <option value="wap800">800 像素宽度原比例缩放</option>
-                <option value="wap720">720 像素宽度原比例缩放</option>
-                <option value="wap360">360 像素宽度原比例缩放</option>
-                <option value="wap240">240 像素宽度原比例缩放</option>
-                <option value="wap180">180 像素宽度原比例缩放</option>
-                <option value="wap50">50 像素宽度原比例缩放</option>
-                <option value="bmiddle">440 像素宽度原比例缩放</option>
-                <option value="small">200 像素宽度原比例缩放</option>
-                <option value="thumb300">300 像素正方形裁剪</option>
-                <option value="thumb180">180 像素正方形裁剪</option>
-                <option value="thumb150">150 像素正方形裁剪</option>
-                <option value="square">80 像素正方形裁剪</option>
-            </datalist>
         </div>
     </div>
     <div class="head-feature">
@@ -87,3 +90,57 @@ const footHTML = `
 
 document.getElementById("head").append(Utils.parseHTML(headHTML));
 document.getElementById("foot").append(Utils.parseHTML(footHTML));
+
+/**
+ * 初始化自定义尺寸输入功能
+ * 实现不进行自动筛选的下拉选择器
+ * @private
+ */
+function initCustomClipInput(): void {
+    const input = document.getElementById("custom-clip-input") as HTMLInputElement;
+    const dropdown = document.querySelector(".custom-clip-dropdown") as HTMLButtonElement;
+    const options = document.querySelector(".custom-clip-options") as HTMLDivElement;
+    const optionItems = document.querySelectorAll(".custom-clip-option") as NodeListOf<HTMLDivElement>;
+
+    if (!input || !dropdown || !options) return;
+
+    // 切换下拉菜单显示/隐藏
+    dropdown.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const isVisible = options.style.display !== "none";
+        options.style.display = isVisible ? "none" : "block";
+    });
+
+    // 选择预设选项
+    optionItems.forEach((item) => {
+        item.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const value = item.getAttribute("data-value");
+            if (value) {
+                input.value = value;
+                options.style.display = "none";
+                // 触发input事件，通知其他组件值已改变
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+        });
+    });
+
+    // 点击其他地方关闭下拉菜单
+    document.addEventListener("click", () => {
+        options.style.display = "none";
+    });
+
+    // 阻止点击输入框和选项区域时关闭菜单
+    input.addEventListener("click", (e) => {
+        e.stopPropagation();
+    });
+
+    options.addEventListener("click", (e) => {
+        e.stopPropagation();
+    });
+}
+
+// 初始化自定义尺寸输入功能
+initCustomClipInput();

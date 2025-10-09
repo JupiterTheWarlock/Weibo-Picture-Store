@@ -70,6 +70,62 @@
     border-bottom: 1px solid #21b3a3;
 }
 
+.custom-clip-dropdown {
+    margin-left: 4px;
+    padding: 2px 6px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+}
+
+.custom-clip-dropdown:hover {
+    background-color: #e9ecef;
+    border-color: #21b3a3;
+}
+
+.custom-clip-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 2px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+}
+
+.custom-clip-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.custom-clip-option:last-child {
+    border-bottom: none;
+}
+
+.custom-clip-option:hover {
+    background-color: #f8f9fa;
+}
+
+.custom-clip-option:active {
+    background-color: #e9ecef;
+}
+
+/* 为包含自定义输入的label添加相对定位 */
+.head-clip > label:last-of-type {
+    position: relative;
+}
+
 .head-copy-mode,
 .head-browsing-history {
     display: inline-block;
@@ -129,7 +185,10 @@
     border-radius: 10px;
     background: #e5e9ef url("../assets/placeholder.png") no-repeat center;
     background-size: cover;
-    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.15), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+    box-shadow:
+        0 2px 2px 0 rgba(0, 0, 0, 0.15),
+        0 3px 1px -2px rgba(0, 0, 0, 0.2),
+        0 1px 5px 0 rgba(0, 0, 0, 0.12);
     transition: background-color 0.15s;
     box-sizing: border-box;
     overflow: hidden;
@@ -180,7 +239,9 @@
     border: 0;
     border-bottom: 1px dotted #ddd;
     background-color: transparent;
-    transition: border-color 0.2s, background-color 0.15s;
+    transition:
+        border-color 0.2s,
+        background-color 0.15s;
     box-sizing: border-box;
 }
 
@@ -200,7 +261,10 @@
     border-radius: 3px;
     color: #fff;
     background-color: #00a1d6;
-    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.15), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+    box-shadow:
+        0 2px 2px 0 rgba(0, 0, 0, 0.15),
+        0 3px 1px -2px rgba(0, 0, 0, 0.2),
+        0 1px 5px 0 rgba(0, 0, 0, 0.12);
     transition: background-color 0.25s ease-out;
     cursor: pointer;
 }
@@ -250,7 +314,9 @@
     padding: 0 0.8em;
     line-height: 2.5;
     color: #888;
-    transition: color 0.15s, transform 500ms ease 450ms;
+    transition:
+        color 0.15s,
+        transform 500ms ease 450ms;
     cursor: pointer;
 }
 
